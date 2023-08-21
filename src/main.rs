@@ -1,3 +1,8 @@
+mod app;
+mod tabs;
+
+use app::App;
+
 fn main() {
-    println!("Hello, world!");
+    App::run().unwrap();
 }
