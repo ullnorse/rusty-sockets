@@ -5,6 +5,7 @@ use egui_dock::{DockArea, Tree};
 use flume::{Sender, Receiver, unbounded};
 
 use crate::tabs::{default_ui, Tab};
+use crate::server::Server;
 
 #[derive(Debug)]
 pub enum ClientMsg {
@@ -31,6 +32,8 @@ pub struct App {
     ctx: egui::Context,
     tree: Arc<RwLock<Tree<Box<dyn Tab>>>>,
 
+    server: Server,
+
     client_msg_channel: (Sender<ClientMsg>, Receiver<ClientMsg>),
     server_msg_channel: (Sender<ServerMsg>, Receiver<ServerMsg>),
 
@@ -45,6 +48,7 @@ pub struct App {
     pub server_received_msg: String,
     pub server_send_msg: String,
     pub server_connected_client: Option<String>,
+    pub server_listening: bool,
 }
 
 impl App {
@@ -52,6 +56,8 @@ impl App {
         App {
             ctx,
             tree: Arc::new(RwLock::new(default_ui())),
+
+            server: Server::new(),
 
             client_msg_channel: unbounded(),
             server_msg_channel: unbounded(),
@@ -66,7 +72,8 @@ impl App {
             server_port: "8585".to_string(),
             server_received_msg: String::new(),
             server_send_msg: String::new(),
-            server_connected_client: None
+            server_connected_client: None,
+            server_listening: false,
         }
     }
 
@@ -113,8 +120,14 @@ impl App {
             println!("{:?}", msg);
 
             match msg {
-                ServerMsg::StartListening => {},
-                ServerMsg::StopListening => {},
+                ServerMsg::StartListening => {
+                    self.server.start("127.0.0.1:8585");
+                    self.server_listening = true;
+                },
+                ServerMsg::StopListening => {
+                    self.server.stop();
+                    self.server_listening = false;
+                },
                 ServerMsg::ViewStandardPorts => {},
                 ServerMsg::DisconnectClient => {},
                 ServerMsg::SendMessage => {},

@@ -21,7 +21,7 @@ impl Tab for Server {
                     app.post_server_msg(ServerMsg::ViewStandardPorts);
                 }
 
-                if app.server_connected_client.is_none() {
+                if !app.server_listening {
                     if ui.button("Start Listening").clicked() {
                         app.post_server_msg(ServerMsg::StartListening);
                     }
